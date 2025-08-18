@@ -2,9 +2,9 @@
 import numpy as np
 from flask import Flask, request, render_template
 
-import pickle
+from model import load_or_train_model
 
-regressor_model = pickle.load(open('regressor_model.pkl', 'rb'))
+regressor_model = load_or_train_model()
 
 app = Flask(__name__)
 

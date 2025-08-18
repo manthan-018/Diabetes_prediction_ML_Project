@@ -15,11 +15,15 @@ def load_or_train_model() -> LinearRegression:
         return regressor_model
 
     if os.path.exists(MODEL_PATH):
-        with open(MODEL_PATH, 'rb') as f:
-            regressor_model = pickle.load(f)
-        return regressor_model
+        try:
+            with open(MODEL_PATH, 'rb') as f:
+                regressor_model = pickle.load(f)
+            return regressor_model
+        except Exception:
+            # Fallback if pickle is incompatible with current numpy/scikit version
+            pass
 
-    # Fallback: train quickly if model file is missing
+    # Fallback: train quickly if model file is missing or unpickle failed
     df = pd.read_csv('Diabetes_cleaned.csv')
     X = df[[
         "Glucose",
@@ -36,8 +40,12 @@ def load_or_train_model() -> LinearRegression:
     model = LinearRegression()
     model.fit(X, y)
 
-    with open(MODEL_PATH, 'wb') as f:
-        pickle.dump(model, f)
+    try:
+        with open(MODEL_PATH, 'wb') as f:
+            pickle.dump(model, f)
+    except Exception:
+        # Ignore save errors; model will still work in-memory
+        pass
 
     regressor_model = model
     return regressor_model
